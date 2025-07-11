@@ -15,10 +15,12 @@ function token(user){
 
 // Verificar usuario
 function auth(request,response,next){
-    let token = request.headers.authorization ? request.headers.authorization.split(" ")[1] : undefined;
 
+    // Convierte la info en headers en array y extrae el token, en el índice 1
+    let token = request.headers.authorization ? request.headers.authorization.split(" ")[1] : undefined;
+    console.log(request.headers.authorization)
     if(!token){
-        return response.sendStatus(401); //does not exist
+        return response.sendStatus(401); //unauthorized
     }
 
     jwt.verify(token, process.env.SECRET, (error, data) => {
@@ -32,7 +34,6 @@ function auth(request,response,next){
 
 
 
-
 const server = express();
 
 server.use(cors());
@@ -42,7 +43,7 @@ server.use("/pruebas", express.static("./pruebas"));
 
 
 // Mostrar todos los socios
-server.get("/members", async (request,response) => {
+server.get("/members", auth, async (request,response) => {
 
     try{
 
@@ -58,7 +59,7 @@ server.get("/members", async (request,response) => {
 });
 
 // Crear nuevo socio
-server.put("/members/new", async (request,response) => {
+server.put("/members/new", auth, async (request,response) => {
 
     let data = request.body;
     console.log(data)
@@ -76,7 +77,7 @@ server.put("/members/new", async (request,response) => {
 });
 
 // Buscar socio por nombre
-server.post("/members/member/:name", async (request, response) => {
+server.post("/members/member/:name", auth, async (request, response) => {
     let {name} = request.params;
     try{
         console.log(name);
@@ -96,7 +97,7 @@ server.post("/members/member/:name", async (request, response) => {
 });
 
 // Buscar por tipo de socio
-server.post("/members/type", async (request, response) => {
+server.post("/members/type", auth, async (request, response) => {
     let {type} = request.body;
 
     try{
@@ -112,7 +113,7 @@ server.post("/members/type", async (request, response) => {
 });
 
 // Buscar socios con la cuota sin pagar
-server.get("/members/unpaid", async (request, response) => {
+server.get("/members/unpaid", auth, async (request, response) => {
     try{
         let unpaidMembership = await getUnpaidFee();
 
@@ -125,7 +126,7 @@ server.get("/members/unpaid", async (request, response) => {
 });
 
 // Actualizar datos del socio
-server.patch("/members/member/edit", async (request,response) => {
+server.patch("/members/member/edit", auth, async (request,response) => {
     let {id, updateData} = request.body;
 
     try{
@@ -173,8 +174,8 @@ server.post("/register", async (request,response) => {
     let {name,password} = request.body;
 
     try{
-        let result = await bcrypt.hash(password, 10);
-        // console.log(resultado);
+        let result = await bcrypt.hash(password, 10); // Encripta la contraseña
+
 
         await createUser({name, password : result });
 
