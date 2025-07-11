@@ -3,6 +3,7 @@ dotenv.config(); // leer fichero .env y crear las variables de entorno
 //--------------
 import mongoose from "mongoose";
 import { Socio } from "../models/socio.model.js";
+import { User } from "../models/user.model.js"
 
 
 
@@ -24,6 +25,55 @@ function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Crear usuario
+export async function createUser(userData){ //{user,password}
+
+   
+    try{
+        await conectar();
+        console.log(userData)
+
+        const newUser = new User(userData);
+        const result = await newUser.save();
+
+        return result._id.toString();
+
+
+    }catch(error){
+        console.error("Error en la base de datos: " + error);
+        throw error;
+    }finally{
+        await mongoose.connection.close()
+    }
+}
+
+
+//Buscar usuario
+export async function getUser(userName){
+
+    try{
+        await conectar();
+
+        let userExists = await User.findOne({ name : userName })
+
+        if(!userExists){
+            throw { error : "no existe un usuario con este nombre"}
+        }
+
+        return userExists;
+
+
+
+    }catch(error){
+        console.error("Error en la base de datos: " + error);
+        throw error;
+    }finally{
+        await mongoose.connection.close()
+    }
+}
+
+
+
 
 // Crear socio
 export async function createMember(memberData){
@@ -33,9 +83,6 @@ export async function createMember(memberData){
         
         // el nombre de la entidad se convierte a minúscula antes de guardarlo
         memberData.nombreEntidad = memberData.nombreEntidad.trim().toLowerCase();
-
-
-
 
         // Comprobar que el socio no está dado de alta en el sistema, insensible a mayúsculas
         const checkMember = await Socio.findOne({ nombreEntidad : new RegExp(`^${escapeRegex(memberData.nombreEntidad)}$`, 'i') })
@@ -53,7 +100,7 @@ export async function createMember(memberData){
 
         return result._id.toString();
     }catch(error){
-        console.error( "error al crear el socio: ", error);
+        console.error( "Error en la base de datos: ", error);
         throw error;
 
     }finally{
@@ -70,7 +117,7 @@ export async function getMembers(){
         const members = await Socio.find({});
         return members;
     }catch(error){
-        console.error( "error al buscar los socios", error);
+        console.error( "Error en la base de datos", error);
         throw error;
     }finally{
         await mongoose.connection.close();
@@ -92,7 +139,7 @@ export async function getMemberByName(name){
         return entidad; // devuelve todo el objeto
 
     }catch(error){
-        console.error("Error en la búsqueda por nombre: ", error);
+        console.error("Error en la base de datos ", error);
         throw error;
     }finally{
         await mongoose.connection.close();
@@ -110,7 +157,7 @@ export async function getMemebersByType(memberType){
         return typeQuery;
 
     }catch(error){
-        console.error("Error en la búsqueda: ", error);
+        console.error("Error en la base de datos ", error);
         throw error;
     }finally{
         await mongoose.connection.close();
@@ -129,7 +176,7 @@ export async function getUnpaidFee(){
         return unpaid;
 
     }catch(error){
-        console.error("Error en la búsqueda: ", error);
+        console.error("Error en la base de datos ", error);
         throw error;
     }finally{
         await mongoose.connection.close();
@@ -155,13 +202,29 @@ export async function updateMember(id,updateData){
         return updated;
 
     }catch(error){
-        console.error("Error en la actualización de datos: ", error);
+        console.error("Error en la base de datos ", error);
         throw error;
     }finally{
         await mongoose.connection.close();
     }
 }
 
+// Borrar socio
+export async function deleteMember(id){
+    await conectar();
+
+    try{
+
+        let deletedCount = await Socio.deleteOne( {_id : id} );
+
+        return deletedCount;
+
+    }catch(error){
+
+    }finally{
+        await mongoose.connection.close();
+    }
+}
 
 
 // Script para cambiar todos los nombreEntidad a minúscula
