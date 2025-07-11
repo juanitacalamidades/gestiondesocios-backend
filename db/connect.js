@@ -4,48 +4,51 @@ dotenv.config(); // leer fichero .env y crear las variables de entorno
 import mongoose from "mongoose";
 import { Socio } from "../models/socio.model.js";
 
-export async function conectar(){
-    
-    try{
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log("Connection established");
-    }catch(error){
-        console.error("Error connecting to MongoDB", error.message);
+
+
+let isConnected = false;
+
+async function conectar(){
+    if(!isConnected){
+        try{
+            await mongoose.connect(process.env.MONGO_URI);
+            console.log("Connection established");
+        }catch(error){
+            console.error("Error connecting to MongoDB", error.message);
+        }
     }
+}    
+
+// Función para escapar caracteres raros que puedan usarse en el nombre de la entidad
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 
-
-
-
-
 // Crear socio
-export async function createMember(data){
+export async function createMember(memberData){
     
     try{
         await conectar();
-
+        
         // el nombre de la entidad se convierte a minúscula antes de guardarlo
-        data.nombreEntidad = data.nombreEntidad.trim().toLowerCase();
+        memberData.nombreEntidad = memberData.nombreEntidad.trim().toLowerCase();
 
 
-        // Función para escapar caracteres raros que puedan usarse en el nombre de la entidad
-        function escapeRegex(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
+
 
         // Comprobar que el socio no está dado de alta en el sistema, insensible a mayúsculas
-        const checkMember = await Socio.findOne({ nombreEntidad : new RegExp(`^${escapeRegex(data.nombreEntidad)}$`, 'i') })
+        const checkMember = await Socio.findOne({ nombreEntidad : new RegExp(`^${escapeRegex(memberData.nombreEntidad)}$`, 'i') })
 
         if(checkMember) {
             throw { error : "Ya existe un socio con el mismo nombre de entidad" }
         }
 
         // Crear instancia del modelo Socio
-        const newMember = new Socio(data);
+        const newMember = new Socio(memberData);
         const result = await newMember.save();
 
-        console.log("socio creado: ", result._id);
+       // console.log("socio creado: ", result._id);
 
 
         return result._id.toString();
@@ -77,17 +80,19 @@ export async function getMembers(){
 
 // Buscar un socio por el nombre de entidad
 export async function getMemberByName(name){
+    
     await conectar();
 
     try{
-
-        const nameQuery = Socio.where({ nombreEntidad : name.toLowerCase() });
+        // usar RegExp para evitar la necesidad de búsqueda exacta
+        const nameQuery = Socio.where({ nombreEntidad : new RegExp(name, "i") });
+        
         const entidad = await nameQuery.findOne();
 
         return entidad; // devuelve todo el objeto
 
     }catch(error){
-        console.error("Error en la búsqueda por nomrbe: ", error);
+        console.error("Error en la búsqueda por nombre: ", error);
         throw error;
     }finally{
         await mongoose.connection.close();
@@ -131,7 +136,7 @@ export async function getUnpaidFee(){
     }
 }
 
-
+// Editar datos de un socio
 export async function updateMember(id,updateData){
     await conectar();
 
