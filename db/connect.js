@@ -23,16 +23,10 @@ function escapeRegex(string) {
 
 // Crear usuario
 export async function createUser(userData){ //{user,password}
-
-   
     try{
-
         const newUser = new User(userData);
         const result = await newUser.save();
-
         return result._id.toString();
-
-
     }catch(error){
         console.error("Error en la base de datos: " + error);
         throw error;
@@ -42,18 +36,13 @@ export async function createUser(userData){ //{user,password}
 
 //Buscar usuario
 export async function getUser(userName){
-
     try{
         let userExists = await User.findOne({ name : userName })
 
         if(!userExists){
             throw { error : "no existe un usuario con este nombre"}
         }
-
         return userExists;
-
-
-
     }catch(error){
         console.error("Error en la base de datos: " + error);
         throw error;
@@ -61,13 +50,9 @@ export async function getUser(userName){
 }
 
 
-
-
 // Crear socio
 export async function createMember(memberData){
-    
     try{
-        
         // el nombre de la entidad se convierte a minúscula antes de guardarlo
         memberData.nombreEntidad = memberData.nombreEntidad.trim().toLowerCase();
 
@@ -82,20 +67,15 @@ export async function createMember(memberData){
         const newMember = new Socio(memberData);
         const result = await newMember.save();
 
-       // console.log("socio creado: ", result._id);
-
-
         return result._id.toString();
     }catch(error){
         console.error( "Error en la base de datos: ", error);
         throw error;
-
     }
 }
 
 // Mostrar todos los socios
 export async function getMembers(){
-
     try{
         const members = await Socio.find({});
         return members;
@@ -103,35 +83,29 @@ export async function getMembers(){
         console.error( "Error en la base de datos", error);
         throw error;
     }
-  
 };
 
-// Buscar un socio por el nombre de entidad
-export async function getMemberByName(name){
-    
-    try{
-        // usar RegExp para evitar la necesidad de búsqueda exacta
-        const nameQuery = Socio.where({ nombreEntidad : new RegExp(name, "i") });
-        
-        const entidad = await nameQuery.findOne();
-
-        return entidad; // devuelve todo el objeto
-
-    }catch(error){
-        console.error("Error en la base de datos ", error);
-        throw error;
+// Buscar un socio por el id
+export async function getMemberById(id) {
+  try {
+    // Validar que el ID sea un ObjectId válido de MongoDB
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error("id no válido");
     }
 
+    const member = await Socio.findById(id);
+    return member;
+  } catch (error) {
+    console.error("Error en la base de datos: ", error);
+    throw error;
+  }
 }
 
 // Buscar socios por el tipo de socio (compañía, distribuidora,festival, otro)
-export async function getMemebersByType(memberType){
-
+export async function getMembersByType(memberType){
     try{
-
         const typeQuery = await Socio.where({ tipoSocio : new RegExp(`^${memberType}$`, "i") }).find({});
         return typeQuery;
-
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
@@ -141,13 +115,9 @@ export async function getMemebersByType(memberType){
 
 // Buscar socios que no han pagado la cuota
 export async function getUnpaidFee(){
-
     try{
-
         const unpaid = await Socio.find( {'cuota.pagada' : false }).select('nombreEntidad tipoSocio')
-
         return unpaid;
-
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
@@ -156,21 +126,16 @@ export async function getUnpaidFee(){
 
 // Editar datos de un socio
 export async function updateMember(id,updateData){
-
     try{
-
         const updated = await Socio.findByIdAndUpdate(id, updateData, {
             new : true, // retornar el documento actualizado
             runValidators : true, //forzar las validaciones
             collation : { locale : 'es', strength : 2} // definir cómo se comparan los strings: en espaol, case insensitive
         });
-
         if(!updated){
             throw new Error("Socio no encontrado")
         }
-
         return updated;
-
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
@@ -179,15 +144,11 @@ export async function updateMember(id,updateData){
 
 export async function getInterested(){
      try{
-
         const interested = await Socio.find( {"status" : "interesado" }).select('nombreEntidad tipoSocio status')
-
         if(!interested){
             throw new Error("La lista de interesados está vacía")
         }
-
         return interested;
-
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
@@ -196,12 +157,9 @@ export async function getInterested(){
 
 // Borrar socio
 export async function deleteMember(id){
-
     try{
         let deletedCount = await Socio.deleteOne( {_id : id} );
-
         return deletedCount;
-
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;

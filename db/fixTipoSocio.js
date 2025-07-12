@@ -1,5 +1,15 @@
 // fixTipoSocio.js
 
+// 📌 Qué hace:
+// Encuentra documentos donde tipoSocio es un array.
+
+// Toma el primer valor si es un string válido.
+
+// Lo guarda como string.
+
+// Ignora casos problemáticos y los deja logueados.
+
+
 import dotenv from "dotenv";
 dotenv.config(); // Para usar variables de entorno si las necesitas
 import mongoose from "mongoose";
@@ -7,7 +17,7 @@ import mongoose from "mongoose";
 let isConnected = false;
 
 if(!isConnected){
-    mongoose.connect(process.env.MONGO_URI);
+    mongoose.connect("mongodb+srv://yoannarrd:rLTxVfmO1DdTYbYJ@cluster-prueba.os6y8qr.mongodb.net/socios-artekale");
     console.log("Connection established");
 }else{
     console.error("Error connecting to MongoDB", error.message);

@@ -7,14 +7,14 @@ const { Schema, model } = mongoose;
 
 const socioSchema = new Schema({
 	nombreEntidad : String,
-	tipoSocio : [{
+	tipoSocio : {
 		type : String,
 		enum : {
 			values : ['Compañía', 'Distribuidora', 'Festival', 'Otro'],
 			message : '{VALUE} no es un tipo de socio válido. Usa "Compañía", "Distribuidora", "Festival" u "Otro"'
 		},
 		required : [true, "El tipo de socio es obligatorio."]
-		}],
+		},
 	status : {
 		type : String,
 		enum : {
