@@ -5,7 +5,7 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { getMembers, createMember, getMemberByName, getMemebersByType, getUnpaidFee, updateMember, createUser, getUser } from "./db/connect.js";
+import { getMembers, createMember, getMemberByName, getMemebersByType, getUnpaidFee, updateMember, createUser, getUser, getInterested } from "./db/connect.js";
 
 
 // Generar token para autenticación
@@ -18,7 +18,7 @@ function auth(request,response,next){
 
     // Convierte la info en headers en array y extrae el token, en el índice 1
     let token = request.headers.authorization ? request.headers.authorization.split(" ")[1] : undefined;
-    console.log(request.headers.authorization)
+
     if(!token){
         return response.sendStatus(401); //unauthorized
     }
@@ -139,6 +139,23 @@ server.patch("/members/member/edit", auth, async (request,response) => {
         response.json( { error : "error en el servidor" } )
     }
 });
+
+
+server.get("/interested", auth, async (request,response) => {
+
+    try{
+
+        let interested = await getInterested();
+
+        response.json(interested)
+
+    }catch(error){
+        response.sendStatus(500);
+        response.json({ error : "Error en el servidor" })
+
+    }
+})
+
 
 // Login
 server.post("/login", async (request,response) => {

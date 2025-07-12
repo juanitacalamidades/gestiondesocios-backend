@@ -9,16 +9,12 @@ import { User } from "../models/user.model.js"
 
 let isConnected = false;
 
-async function conectar(){
-    if(!isConnected){
-        try{
-            await mongoose.connect(process.env.MONGO_URI);
-            console.log("Connection established");
-        }catch(error){
-            console.error("Error connecting to MongoDB", error.message);
-        }
-    }
-}    
+if(!isConnected){
+    mongoose.connect(process.env.MONGO_URI);
+    console.log("Connection established");
+}else{
+    console.error("Error connecting to MongoDB", error.message);
+}
 
 // Función para escapar caracteres raros que puedan usarse en el nombre de la entidad
 function escapeRegex(string) {
@@ -30,8 +26,6 @@ export async function createUser(userData){ //{user,password}
 
    
     try{
-        await conectar();
-        console.log(userData)
 
         const newUser = new User(userData);
         const result = await newUser.save();
@@ -42,8 +36,6 @@ export async function createUser(userData){ //{user,password}
     }catch(error){
         console.error("Error en la base de datos: " + error);
         throw error;
-    }finally{
-        await mongoose.connection.close()
     }
 }
 
@@ -52,8 +44,6 @@ export async function createUser(userData){ //{user,password}
 export async function getUser(userName){
 
     try{
-        await conectar();
-
         let userExists = await User.findOne({ name : userName })
 
         if(!userExists){
@@ -67,8 +57,6 @@ export async function getUser(userName){
     }catch(error){
         console.error("Error en la base de datos: " + error);
         throw error;
-    }finally{
-        await mongoose.connection.close()
     }
 }
 
@@ -79,7 +67,6 @@ export async function getUser(userName){
 export async function createMember(memberData){
     
     try{
-        await conectar();
         
         // el nombre de la entidad se convierte a minúscula antes de guardarlo
         memberData.nombreEntidad = memberData.nombreEntidad.trim().toLowerCase();
@@ -103,15 +90,11 @@ export async function createMember(memberData){
         console.error( "Error en la base de datos: ", error);
         throw error;
 
-    }finally{
-        await mongoose.connection.close();
     }
 }
 
 // Mostrar todos los socios
 export async function getMembers(){
-   
-    await conectar();
 
     try{
         const members = await Socio.find({});
@@ -119,8 +102,6 @@ export async function getMembers(){
     }catch(error){
         console.error( "Error en la base de datos", error);
         throw error;
-    }finally{
-        await mongoose.connection.close();
     }
   
 };
@@ -128,8 +109,6 @@ export async function getMembers(){
 // Buscar un socio por el nombre de entidad
 export async function getMemberByName(name){
     
-    await conectar();
-
     try{
         // usar RegExp para evitar la necesidad de búsqueda exacta
         const nameQuery = Socio.where({ nombreEntidad : new RegExp(name, "i") });
@@ -141,33 +120,27 @@ export async function getMemberByName(name){
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
-    }finally{
-        await mongoose.connection.close();
     }
 
 }
 
 // Buscar socios por el tipo de socio (compañía, distribuidora,festival, otro)
 export async function getMemebersByType(memberType){
-    await conectar();
 
     try{
 
-        const typeQuery = await Socio.where({ tipoSocio : memberType }).find({});
+        const typeQuery = await Socio.where({ tipoSocio : new RegExp(`^${memberType}$`, "i") }).find({});
         return typeQuery;
 
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
-    }finally{
-        await mongoose.connection.close();
     }
 }
 
 
 // Buscar socios que no han pagado la cuota
 export async function getUnpaidFee(){
-    await conectar();
 
     try{
 
@@ -178,14 +151,11 @@ export async function getUnpaidFee(){
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
-    }finally{
-        await mongoose.connection.close();
     }
 }
 
 // Editar datos de un socio
 export async function updateMember(id,updateData){
-    await conectar();
 
     try{
 
@@ -204,37 +174,39 @@ export async function updateMember(id,updateData){
     }catch(error){
         console.error("Error en la base de datos ", error);
         throw error;
-    }finally{
-        await mongoose.connection.close();
+    }
+}
+
+export async function getInterested(){
+     try{
+
+        const interested = await Socio.find( {"status" : "interesado" }).select('nombreEntidad tipoSocio status')
+
+        if(!interested){
+            throw new Error("La lista de interesados está vacía")
+        }
+
+        return interested;
+
+    }catch(error){
+        console.error("Error en la base de datos ", error);
+        throw error;
     }
 }
 
 // Borrar socio
 export async function deleteMember(id){
-    await conectar();
 
     try{
-
         let deletedCount = await Socio.deleteOne( {_id : id} );
 
         return deletedCount;
 
     }catch(error){
-
-    }finally{
-        await mongoose.connection.close();
+        console.error("Error en la base de datos ", error);
+        throw error;
     }
 }
 
 
-// Script para cambiar todos los nombreEntidad a minúscula
-export async function insensitiveNombreEntidad(){
-    try{
-        await conectar();
-        await Socio.updateMany({}, [ { $set: { nombreEntidad: { $toLower: "$nombreEntidad" } } } ]);
-    }catch(error){
-        console.error(error)
-    }finally{
-        await mongoose.connection.close();
-    }
-}
+
