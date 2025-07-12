@@ -104,7 +104,7 @@ export async function getMemberById(id) {
 // Buscar socios por el tipo de socio (compañía, distribuidora,festival, otro)
 export async function getMembersByType(memberType){
     try{
-        const typeQuery = await Socio.where({ tipoSocio : new RegExp(`^${memberType}$`, "i") }).find({});
+        const typeQuery = await Socio.where({ tipoSocio : new RegExp(`^${memberType}$`, "i"), status: { $nin: ["interesado", "ex-socio"] } }).find({});
         return typeQuery;
     }catch(error){
         console.error("Error en la base de datos ", error);
@@ -116,7 +116,7 @@ export async function getMembersByType(memberType){
 // Buscar socios que no han pagado la cuota
 export async function getUnpaidFee(){
     try{
-        const unpaid = await Socio.find( {'cuota.pagada' : false }).select('nombreEntidad tipoSocio')
+        const unpaid = await Socio.find( {'cuota.pagada' : false });
         return unpaid;
     }catch(error){
         console.error("Error en la base de datos ", error);
@@ -144,7 +144,7 @@ export async function updateMember(id,updateData){
 
 export async function getInterested(){
      try{
-        const interested = await Socio.find( {"status" : "interesado" }).select('nombreEntidad tipoSocio status')
+        const interested = await Socio.find( {"status" : "interesado" });
         if(!interested){
             throw new Error("La lista de interesados está vacía")
         }
