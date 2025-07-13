@@ -5,7 +5,7 @@ import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { getMembers, createMember, getMemberById, getMembersByType, getUnpaidFee, updateMember, createUser, getUser, getInterested } from "./db/connect.js";
+import { getMembers, createMember, getMemberById, getMembersByType, getUnpaidFee, updateMember, createUser, getUser, getInterested, getMember } from "./db/connect.js";
 
 
 // Generar token para autenticación
@@ -60,14 +60,13 @@ server.get("/members", auth, async (request,response) => {
         response.json(members);
     }catch(error){
         response.status(500);
-        response.json( { error : "error en el servidor" } );
+        response.json({ error : "error en el servidor" });
     }
 });
 
 // Crear nuevo socio
 server.put("/members/new", auth, async (request,response) => {
     let data = request.body;
-    console.log(data)
     try {
         let newMember = data;
         let id = await createMember(newMember);
@@ -75,8 +74,26 @@ server.put("/members/new", auth, async (request,response) => {
         response.json({id})
     }catch(error){
         response.status(500);
-        response.json( { error : "error en el servidor" } );
+        response.json({ error : "error en el servidor" });
     }
+});
+
+// Buscar socio por nombre
+server.get("/members/member", auth, async (request,response) => {
+    let name = request.query.name;
+
+    if(!name){
+        return response.status(400).json( { error : "falta el parámetro nombre" } );
+    }
+    try{
+        let member = await getMember(name);
+        response.json(member);
+    }catch(error){
+        response.status(500);
+        response.json({ error : "error en el servidor" })
+    }
+
+
 });
 
 // Buscar socio por id
@@ -90,7 +107,7 @@ server.get("/members/member/:id", auth, async (request, response) => {
         response.json(member);
     }catch(error){
         response.status(500);
-        response.json( { error : "error en el servidor" } )
+        response.json({ error : "error en el servidor" })
     }
 });
 
@@ -103,7 +120,7 @@ server.patch("/members/member/edit", auth, async (request,response) => {
         response.json(newData);
     }catch(error){
         response.status(500);
-        response.json( { error : "error en el servidor" } )
+        response.json({ error : "error en el servidor" })
     }
 });
 

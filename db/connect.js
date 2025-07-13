@@ -101,6 +101,18 @@ export async function getMemberById(id) {
   }
 }
 
+//Buscar socio por el nombre
+export async function getMember(name){
+    try{
+        const member = await Socio.find({ nombreEntidad : { $regex: new RegExp(name, "i") }});
+        return(member);
+    }catch(error){
+        console.error("Error en la base de datos: ", error);
+        throw error;
+    }
+}
+
+
 // Buscar socios por el tipo de socio (compañía, distribuidora,festival, otro)
 export async function getMembersByType(memberType){
     try{
