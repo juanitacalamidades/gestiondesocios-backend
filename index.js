@@ -39,8 +39,6 @@ const server = express();
 server.use(cors());
 server.use(express.json());
 
-server.use("/pruebas", express.static("./pruebas"));
-
 
 // Mostrar todos los socios o filtrar por tipo
 server.get("/members", auth, async (request,response) => {
