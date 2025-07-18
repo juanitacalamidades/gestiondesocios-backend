@@ -96,7 +96,7 @@ server.get("/members/member", auth, async (request,response) => {
 
 });
 
-// Buscar socio por id
+// Buscar socio por id 
 server.get("/members/member/:id", auth, async (request, response) => {
     let {id} = request.params;
     try{
