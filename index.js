@@ -7,14 +7,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { getMembers, createMember, getMemberById, getMembersByType, getUnpaidFee, updateMember, createUser, getUser, getInterested, getMember } from "./db/connect.js";
 
-const corsOptions = {
-  origin: ['http://localhost:5173', 'https://gestiondesocios.onrender.com'],
-};
-
-// Generar token para autenticación
-function token(user){
-    return jwt.sign( {user}, process.env.SECRET );
-}; 
 
 // Verificar usuario
 function auth(request,response,next){
@@ -39,7 +31,17 @@ function auth(request,response,next){
 
 const server = express();
 
-server.use(cors());
+const corsOptions = {
+  origin: ['http://localhost:5173', 'https://gestiondesocios.onrender.com'],
+};
+
+// Generar token para autenticación
+function token(user){
+    return jwt.sign( {user}, process.env.SECRET );
+}; 
+
+
+server.use(cors(corsOptions));
 server.use(express.json());
 
 
