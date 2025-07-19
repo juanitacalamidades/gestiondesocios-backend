@@ -12,7 +12,7 @@
 * **bcrypt** para encriptación de contraseñas
 * **dotenv** para variables de entorno
 * **cors** para manejo de políticas de acceso
-* **Render Cron Jobs** para tareas automatizadas
+
 
 ---
 
@@ -22,7 +22,6 @@
 * `connect.js`: archivo donde se definen las funciones CRUD de base de datos.
 * `models/`: contiene los esquemas de Mongoose para `Socio` y `Usuario`.
 * `middlewares/`: incluye el middleware `auth` (protección de rutas) y los manejadores de errores (`404` y general).
-* `updateMembership.js`: script que se ejecuta de forma periódica (cron job) para comprobar si ha pasado un año desde el último pago de cuota y actualizar el estado.
 
 ---
 
@@ -36,16 +35,6 @@ El modelo `Socio` incluye:
 * Estado de participación en asambleas anuales.
 * Documentación recibida (`video/foto`, `catálogo`, etc.).
 * Status general: `activo`, `ex-socio`, `interesado`.
-
----
-
-## 🔄 Automatización de cuotas
-
-El archivo `updateMembership.js` se ejecuta periódicamente mediante un **cron job en Render**. Este script:
-
-* Busca los socios cuya cuota está marcada como pagada.
-* Comprueba si ha pasado más de un año desde `cuota.fechaDePago`.
-* Si ha expirado, actualiza `cuota.pagada` a `false`.
 
 ---
 
@@ -63,6 +52,12 @@ El archivo `updateMembership.js` se ejecuta periódicamente mediante un **cron j
 Este backend está desplegado en **Render** como servicio web y cron job.
 
 ---
+
+🔄 Automatización de cuotas (mejora pendiente)
+
+Existe un script llamado updateMembership.js que permite automatizar el cambio de estado de cuota cuando ha pasado un año desde el último pago. Este script puede ser ejecutado periódicamente mediante un cron job para actualizar de forma automática el campo cuota.pagada.
+
+Mejora pendiente: implementar este script como un Cron Job en Render o entorno equivalente, apuntando al mismo repositorio del backend.
 
 ## ✍️ Autoría
 
