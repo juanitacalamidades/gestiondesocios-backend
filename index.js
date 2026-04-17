@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 import { getMembers, createMember, getMemberById, getMembersByType, getUnpaidFee, updateMember, createUser, getUser, getInterested, getMember } from "./db/connect.js";
 
 
-// Verificar usuario
+// Verificar usuario (añadir "auth" a los middlewares)
 function auth(request,response,next){
 
     // Convierte la info en headers en array y extrae el token, en el índice 1
@@ -46,7 +46,7 @@ server.use(express.json());
 
 
 // Mostrar todos los socios o filtrar por tipo
-server.get("/members", auth, async (request,response) => {
+server.get("/members", async (request,response) => {
     let {type,unpaid} = request.query;
     try{
         let members;
@@ -68,7 +68,7 @@ server.get("/members", auth, async (request,response) => {
 });
 
 // Crear nuevo socio
-server.put("/members/new", auth, async (request,response) => {
+server.put("/members/new", async (request,response) => {
     let data = request.body;
     try {
         let newMember = data;
@@ -82,7 +82,7 @@ server.put("/members/new", auth, async (request,response) => {
 });
 
 // Buscar socio por nombre
-server.get("/members/member", auth, async (request,response) => {
+server.get("/members/member", async (request,response) => {
     let name = request.query.name;
 
     if(!name){
@@ -100,7 +100,7 @@ server.get("/members/member", auth, async (request,response) => {
 });
 
 // Buscar socio por id 
-server.get("/members/member/:id", auth, async (request, response) => {
+server.get("/members/member/:id", async (request, response) => {
     let {id} = request.params;
     try{
         let member = await getMemberById(id);
@@ -116,7 +116,7 @@ server.get("/members/member/:id", auth, async (request, response) => {
 
 
 // Actualizar datos del socio
-server.patch("/members/member/edit", auth, async (request,response) => {
+server.patch("/members/member/edit", async (request,response) => {
     let {id, updateData} = request.body;
     try{
         let newData = await updateMember(id, updateData);
@@ -128,7 +128,7 @@ server.patch("/members/member/edit", auth, async (request,response) => {
 });
 
 
-server.get("/interested", auth, async (request,response) => {
+server.get("/interested", async (request,response) => {
     try{
         let interested = await getInterested();
         response.json(interested)
